@@ -760,5 +760,101 @@ BEGIN
 END;
 GO
 
+CREATE PROC FakeTableTests.[test FakeTable calls Private_RemoveObjectSchemaBinding once for each dependant view declared with schemabinding]
+AS
+BEGIN
+  --Arrange:
+  -- Create a table and four views that depend on the table. Two of the views are declared with schemabinding
+  -- and two are not.
+  IF OBJECT_ID('dbo.tst1') IS NOT NULL DROP TABLE dbo.tst1;
+
+  CREATE TABLE dbo.tst1(x VARCHAR(30));
+  
+  DECLARE @ViewCreate nvarchar(max)
+  SET @ViewCreate = 'CREATE VIEW dbo.vtst1 with SCHEMABINDING as SELECT x FROM dbo.tst1'
+  EXEC (@ViewCreate)
+  
+  SET @ViewCreate = 'CREATE VIEW dbo.vtst2 with SCHEMABINDING as SELECT x FROM dbo.tst1'
+  EXEC (@ViewCreate)
+  
+  SET @ViewCreate = 'CREATE VIEW dbo.vtst3 as SELECT x FROM dbo.tst1'
+  EXEC (@ViewCreate)
+  
+  SET @ViewCreate = 'CREATE VIEW dbo.vtst4 as SELECT x FROM dbo.tst1'
+  EXEC (@ViewCreate)
+  
+  --Spy the procedures called by FakeTable
+  
+  EXEC tSQLt.SpyProcedure 'tSQLt.Private_CreateFakeOfTable'
+
+  EXEC tSQLt.SpyProcedure 'tSQLt.Private_MarkFakeTable'
+
+  --EXEC tSQLt.SpyProcedure 'tSQLt.Private_RemoveSchemaBindingFromReferencingObjects'
+  
+  EXEC tSQLt.SpyProcedure 'tSQLt.Private_RemoveObjectSchemaBinding'
+  
+  --Note: spying on Private_RenameObjectToUniqueName will break other spies after this, so make sure it is the last one. 
+  EXEC tSQLt.SpyProcedure 'tSQLt.Private_RenameObjectToUniqueName'
+  
+  --Act:
+  EXEC tSQLt.FakeTable 'dbo.tst1'
+  
+  --Assert:
+  CREATE TABLE actual  (ObjectName varchar(max))
+  CREATE TABLE expected (ObjectName varchar(max))
+  
+  --Check that Private_RemoveObjectSchemaBinding was called twice.
+  INSERT INTO expected (ObjectName)
+    VALUES ('[dbo].[vtst1]'), ('[dbo].[vtst2]')
+
+  INSERT INTO actual (ObjectName) SELECT ObjectName FROM tSQLt.Private_RemoveObjectSchemaBinding_SpyProcedureLog
+    
+  EXEC tsqlt.AssertEqualsTable 'expected', 'actual'
+END;
+
+GO
+
+CREATE PROC FakeTableTests.[test FakeTable works when a referencing view declared with schemabinding exists]
+AS
+BEGIN
+  --Arrange:
+  -- Create a table and four views that depend on the table. Two of the views are declared with schemabinding
+  -- and two are not.
+  IF OBJECT_ID('dbo.tst1') IS NOT NULL DROP TABLE dbo.tst1;
+
+  CREATE TABLE dbo.tst1(x VARCHAR(30));
+  
+  DECLARE @ViewCreate nvarchar(max)
+  SET @ViewCreate = 'CREATE VIEW dbo.vtst1 with SCHEMABINDING as SELECT x FROM dbo.tst1'
+  EXEC (@ViewCreate)
+  
+  SET @ViewCreate = 'CREATE VIEW dbo.vtst2 with SCHEMABINDING as SELECT x FROM dbo.tst1'
+  EXEC (@ViewCreate)
+  
+  SET @ViewCreate = 'CREATE VIEW dbo.vtst3 as SELECT x FROM dbo.tst1'
+  EXEC (@ViewCreate)
+  
+  SET @ViewCreate = 'CREATE VIEW dbo.vtst4 as SELECT x FROM dbo.tst1'
+  EXEC (@ViewCreate)
+  
+  --ACT:
+  BEGIN TRY
+    --Rename will fail if view schemabinding still on.
+    EXEC tSQLt.FakeTable 'dbo.tst1'
+  END TRY
+  --ASSERT:
+  BEGIN CATCH
+    DECLARE @ErrorRaised nvarchar(max) = ''
+    SET @ErrorRaised = ERROR_MESSAGE()
+    EXEC tSQLt.Fail @ErrorRaised
+  END CATCH
+  
+END;
+GO
+--TODO: How to test that after test completes, that with schemabinding references are rolled back to original state?
+
+/*
+EXEC tSQLt.Run 'FakeTableTests'
+*/
 --ROLLBACK
 

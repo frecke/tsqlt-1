@@ -21,6 +21,8 @@ BEGIN
      FROM tSQLt.Private_ResolveFakeTableNamesForBackwardCompatibility(@TableName, @SchemaName);
    
    EXEC tSQLt.Private_ValidateFakeTableParameters @SchemaName,@OrigTableName,@OrigSchemaName;
+   
+   EXEC tSQLt.Private_RemoveSchemaBindingFromReferencingObjects @OrigTableName
 
    EXEC tSQLt.Private_RenameObjectToUniqueName @SchemaName, @TableName, @NewNameOfOriginalTable OUTPUT;
 
