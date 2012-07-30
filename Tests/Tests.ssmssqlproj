@@ -3,7 +3,7 @@
   <Items>
     <LogicalFolder Name="Connections" Type="2" Sorted="true">
       <Items>
-        <ConnectionNode Name="(local):PROACTIVE\ksummerlin">
+        <ConnectionNode Name="(local):PROACTIVE\KSummerlin">
           <Created>2012-07-27T13:19:32.5547423-04:00</Created>
           <Type>SQL</Type>
           <Server>(local)</Server>
@@ -15,12 +15,24 @@
           <ConnectionProtocol>NotSpecified</ConnectionProtocol>
           <ApplicationName>Microsoft SQL Server Management Studio - Query</ApplicationName>
         </ConnectionNode>
-        <ConnectionNode Name="Dev_R2:PROACTIVE\ksummerlin">
+        <ConnectionNode Name="Dev_R2:PROACTIVE\KSummerlin">
           <Created>2011-11-01T16:16:28.6301397-04:00</Created>
           <Type>SQL</Type>
           <Server>Dev_R2</Server>
           <UserName />
           <Authentication>Windows Authentication</Authentication>
+          <InitialDB>tSQLt_dev</InitialDB>
+          <LoginTimeout>15</LoginTimeout>
+          <ExecutionTimeout>0</ExecutionTimeout>
+          <ConnectionProtocol>NotSpecified</ConnectionProtocol>
+          <ApplicationName>Microsoft SQL Server Management Studio - Query</ApplicationName>
+        </ConnectionNode>
+        <ConnectionNode Name="PATKS:sa">
+          <Created>2012-07-30T16:09:50.8580009-04:00</Created>
+          <Type>SQL</Type>
+          <Server>PATKS</Server>
+          <UserName>sa</UserName>
+          <Authentication>SQL</Authentication>
           <InitialDB>tSQLt_dev</InitialDB>
           <LoginTimeout>15</LoginTimeout>
           <ExecutionTimeout>0</ExecutionTimeout>
@@ -48,6 +60,12 @@
           <AssociatedConnSrvName>Dev_R2</AssociatedConnSrvName>
           <AssociatedConnUserName />
           <FullPath>DropClassTests.class.sql</FullPath>
+        </FileNode>
+        <FileNode Name="FakeFunctionTests.class.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:PATKS:False:sa</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>PATKS</AssociatedConnSrvName>
+          <AssociatedConnUserName>sa</AssociatedConnUserName>
+          <FullPath>FakeFunctionTests.class.sql</FullPath>
         </FileNode>
         <FileNode Name="FakeTableTests.class.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:(local):True</AssociatedConnectionMoniker>
