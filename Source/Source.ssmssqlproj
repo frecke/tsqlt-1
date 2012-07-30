@@ -3,7 +3,19 @@
   <Items>
     <LogicalFolder Name="Connections" Type="2" Sorted="true">
       <Items>
-        <ConnectionNode Name="Dev_R2:troilo\dennis">
+        <ConnectionNode Name="(local):PROACTIVE\ksummerlin">
+          <Created>2012-07-27T13:39:56.6257423-04:00</Created>
+          <Type>SQL</Type>
+          <Server>(local)</Server>
+          <UserName />
+          <Authentication>Windows Authentication</Authentication>
+          <InitialDB>tSQLt_dev</InitialDB>
+          <LoginTimeout>15</LoginTimeout>
+          <ExecutionTimeout>0</ExecutionTimeout>
+          <ConnectionProtocol>NotSpecified</ConnectionProtocol>
+          <ApplicationName>Microsoft SQL Server Management Studio - Query</ApplicationName>
+        </ConnectionNode>
+        <ConnectionNode Name="Dev_R2:PROACTIVE\ksummerlin">
           <Created>2011-11-01T16:16:06.1091304-04:00</Created>
           <Type>SQL</Type>
           <Server>Dev_R2</Server>
@@ -24,6 +36,18 @@
           <AssociatedConnSrvName>Dev_R2</AssociatedConnSrvName>
           <AssociatedConnUserName />
           <FullPath>InWork.sql</FullPath>
+        </FileNode>
+        <FileNode Name="tSQLt.Private_RemoveSchemaBindingFromReferencingObjects.ssp.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:(local):True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>(local)</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>tSQLt.Private_RemoveSchemaBindingFromReferencingObjects.ssp.sql</FullPath>
+        </FileNode>
+        <FileNode Name="tSQLt.Private_RemoveObjectSchemaBinding.ssp.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:Dev_R2:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>Dev_R2</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>tSQLt.Private_RemoveObjectSchemaBinding.ssp.sql</FullPath>
         </FileNode>
         <FileNode Name="tSQLt.AssertEqualsTable.ssp.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:Dev_R2:True</AssociatedConnectionMoniker>
