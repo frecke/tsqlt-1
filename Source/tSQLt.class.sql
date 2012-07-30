@@ -617,6 +617,21 @@ BEGIN
 END;
 GO
 
+CREATE PROCEDURE tSQLt.Private_ValidateFunctionCanBeUsedWithFakeFunction
+    @FunctionName NVARCHAR(MAX)
+AS
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM sys.sql_modules m JOIN sys.objects AS o ON m.object_id = o.object_id WHERE m.object_id = OBJECT_ID(@FunctionName))
+    BEGIN
+      RAISERROR('Cannot use FakeFunction on %s because the function does not exist', 16, 10, @FunctionName) WITH NOWAIT;
+    END;
+    
+    IF (1020 < (SELECT COUNT(*) FROM sys.parameters WHERE object_id = OBJECT_ID(@FunctionName)))
+    BEGIN
+      RAISERROR('Cannot use FakeFunction on function %s because it contains more than 1020 parameters', 16, 10, @FunctionName) WITH NOWAIT;
+    END;
+END;
+GO
 
 CREATE PROCEDURE tSQLt.AssertEquals
     @Expected SQL_VARIANT,
