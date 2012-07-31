@@ -955,9 +955,10 @@ BEGIN
   SET @Cmd = REPLACE(@Cmd, '$$SCHEMA_NAME$$', QUOTENAME(@SchemaName));
   SET @Cmd = REPLACE(@Cmd, '$$VIEW_NAME$$', QUOTENAME(@ViewName));
   SET @Cmd = REPLACE(@Cmd, '$$TRIGGER_NAME$$', QUOTENAME(@TriggerName));
-  EXEC(@Cmd);
+  BEGIN TRY
+    EXEC(@Cmd);
 
-  EXEC sp_addextendedproperty @name = N'SetFakeViewOnTrigger', 
+    EXEC sp_addextendedproperty @name = N'SetFakeViewOnTrigger', 
                                @value = 1,
                                @level0type = 'SCHEMA',
                                @level0name = @SchemaName, 
@@ -965,6 +966,10 @@ BEGIN
                                @level1name = @ViewName,
                                @level2type = 'TRIGGER',
                                @level2name = @TriggerName;
+  END TRY
+  BEGIN CATCH
+    --PRINT 'WARNING: View has invalid definition. Name=' + @ViewName
+  END CATCH
 
   RETURN 0;
 END;
