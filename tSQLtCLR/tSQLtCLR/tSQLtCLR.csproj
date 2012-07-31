@@ -54,7 +54,7 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>SigningKey.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>TempSignKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'CruiseControl|AnyCPU'">
     <OutputPath>bin\CruiseControl\</OutputPath>
@@ -88,6 +88,7 @@
     <None Include="sql.proj">
       <InProject>false</InProject>
     </None>
+    <None Include="TempSignKey.snk" />
     <None Include="typeconversion.xml">
       <InProject>false</InProject>
     </None>

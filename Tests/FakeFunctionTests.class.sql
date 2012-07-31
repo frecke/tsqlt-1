@@ -325,4 +325,4 @@ BEGIN
 END;
 GO
 
-EXEC tSQLt.Run 'FakeFunctionTests'
+--EXEC tSQLt.Run 'FakeFunctionTests'

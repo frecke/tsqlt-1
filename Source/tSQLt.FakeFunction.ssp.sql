@@ -18,4 +18,5 @@ BEGIN
   
   EXEC tSQLt.Private_CreateFunctionFake @FunctionObjectId, @FunctionName, @LogTableName, @CommandToExecute;
 END
+---Build-
 GO

@@ -23,8 +23,12 @@ tSQLt.Private_GetIdentityDefinition.sfn.sql
 tSQLt.Private_GetDefaultConstraintDefinition.sfn.sql
 tSQLt.Private_CreateFakeOfTable.ssp.sql
 tSQLt.Private_MarkFakeTable.ssp.sql
+tSQLt.Private_RemoveObjectSchemaBinding.ssp.sql
+tSQLt.Private_RemoveSchemaBindingFromReferencingObjects.ssp.sql
 tSQLt.FakeTable.ssp.sql
 tSQLt.Private_CreateProcedureSpy.ssp.sql
 tSQLt.SpyProcedure.ssp.sql
 tSQLt.Private_CompareTables.ssp.sql
 tSQLt.AssertEqualsTable.ssp.sql
+tSQLt.Private_CreateFunctionFake.ssp.sql
+tSQLt.FakeFunction.ssp.sql

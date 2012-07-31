@@ -11,12 +11,14 @@ CREATE PROCEDURE tSQLt.Private_RemoveObjectSchemaBinding
 AS
 BEGIN   
    DECLARE @ObjectId INT = OBJECT_ID(@ObjectName);
+   DECLARE @DbCollation nvarchar(max);
    
    DECLARE @Sql NVARCHAR(MAX) = OBJECT_DEFINITION(@ObjectId)
-   SET @Sql = REPLACE(@Sql,'CREATE', 'ALTER')
-   SET @Sql = REPLACE(@Sql,'with schemabinding', '') -- remove schema binding
+   --TODO: Are there times when the COLLATE will not work?
+   SET @Sql = REPLACE(@Sql,'CREATE' COLLATE Latin1_General_CI_AS, 'ALTER')
+   SET @Sql = REPLACE(@Sql,'with schemabinding' COLLATE Latin1_General_CI_AS, '') -- remove schema binding
    --print @Sql
-   EXEC sp_executeSQL @Sql
+   EXEC sp_executesql @Sql
 END
 ---Build-
 GO

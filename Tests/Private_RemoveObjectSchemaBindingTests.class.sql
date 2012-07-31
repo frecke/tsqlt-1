@@ -46,4 +46,4 @@ BEGIN
 END;
 GO
 
-EXEC tSQLt.Run 'Private_RemoveObjectSchemaBinding'
+--EXEC tSQLt.Run 'Private_RemoveObjectSchemaBinding'

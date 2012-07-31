@@ -809,7 +809,7 @@ BEGIN
 
   INSERT INTO actual (ObjectName) SELECT ObjectName FROM tSQLt.Private_RemoveObjectSchemaBinding_SpyProcedureLog
     
-  EXEC tsqlt.AssertEqualsTable 'expected', 'actual'
+  EXEC tSQLt.AssertEqualsTable 'expected', 'actual'
 END;
 
 GO
@@ -825,10 +825,10 @@ BEGIN
   CREATE TABLE dbo.tst1(x VARCHAR(30));
   
   DECLARE @ViewCreate nvarchar(max)
-  SET @ViewCreate = 'CREATE VIEW dbo.vtst1 with SCHEMABINDING as SELECT x FROM dbo.tst1'
+  SET @ViewCreate = 'create VIEW dbo.vtst1 with SCHEMABINDING as SELECT x FROM dbo.tst1'
   EXEC (@ViewCreate)
   
-  SET @ViewCreate = 'CREATE VIEW dbo.vtst2 with SCHEMABINDING as SELECT x FROM dbo.tst1'
+  SET @ViewCreate = 'CREATE VIEW dbo.vtst2 WITH SCHEMABINDING as SELECT x FROM dbo.tst1'
   EXEC (@ViewCreate)
   
   SET @ViewCreate = 'CREATE VIEW dbo.vtst3 as SELECT x FROM dbo.tst1'
@@ -853,8 +853,5 @@ END;
 GO
 --TODO: How to test that after test completes, that with schemabinding references are rolled back to original state?
 
-/*
-EXEC tSQLt.Run 'FakeTableTests'
-*/
+--EXEC tSQLt.Run 'FakeTableTests'
 --ROLLBACK
-

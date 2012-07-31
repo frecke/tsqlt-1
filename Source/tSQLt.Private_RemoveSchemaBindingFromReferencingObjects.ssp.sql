@@ -28,7 +28,7 @@ BEGIN
             AND o.type IN ('FN','IF','TF', 'V', 'P')
             AND is_schema_bound_reference = 1
         JOIN ReferencedDependencies AS RD
-                ON d.referenced_id = rd.parentId
+                ON d.referenced_id = RD.parentId
   )
 
   -- select all objects referencing this table in reverse level order
@@ -53,3 +53,5 @@ BEGIN
           SET @currentRecord = @currentRecord + 1
   END
 END
+---Build-
+GO
