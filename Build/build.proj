@@ -1,0 +1,170 @@
+<Project DefaultTargets="all" InitialTargets="" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+	 <Target Name="all"         DependsOnTargets="build_and_extract_package;db_recreate;install;execute_tests"/>
+	 <Target Name="all2008"     DependsOnTargets="build_and_extract_package;db_recreate;install_2008;execute_tests"/>
+	 <Target Name="refresh"     DependsOnTargets="build_and_extract_package;install"/>
+	 <Target Name="refresh2008" DependsOnTargets="build_and_extract_package;install_2008"/>
+
+	 <Target Name="build_and_extract_package" DependsOnTargets="init;clr_compile;package_files_copy;package_construct_tsqlt;set_build_version;package_example;package_create;package_extract"/>
+	 <Target Name="install" DependsOnTargets="db_install_schema;db_install_tests"/>
+	 <Target Name="install_2008" DependsOnTargets="install;db_install_2008_tests"/>
+	 <Target Name="execute_tests" DependsOnTargets="db_tests_run;db_tests_output;db_tests_check_results;execute_example_tests"/>
+
+	 <Target Name="init">
+		<RemoveDir Directories="output"/>
+		<RemoveDir Directories="test"/>
+		<MakeDir Directories="output"/>
+		<MakeDir Directories="test"/>
+		<MakeDir Directories="test/results"/>
+	</Target>
+
+	<UsingTask TaskName="GetFileVersion"
+		TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+		<ParameterGroup>
+	      <Path ParameterType="System.String" Required="true" />
+	      <Version ParameterType="System.String" Output="true" />
+    	</ParameterGroup>
+		<Task>
+			<Code Type="Fragment" Language="cs">
+				<![CDATA[
+				var versionInfo = System.Diagnostics.FileVersionInfo.GetVersionInfo(Path);
+				Version = versionInfo.FileVersion;
+				]]>
+			</Code>
+		</Task>
+	</UsingTask>
+
+	<Target Name="clr_compile">
+	  <MSBuild
+	  	BuildInParallel="False"
+	  	Projects="../tSQLtCLR/tSQLtCLR/tSQLtCLR.csproj"
+	  	Properties="Configuration=CruiseControl"
+	  	UseResultsCache="True">
+	  </MSBuild>
+
+	  <GetFileVersion Path="../tSQLtCLR/tSQLtCLR/bin/CruiseControl/tSQLtCLR.dll" >
+	  	<Output PropertyName="cls_version" TaskParameter="Version" />
+	  </GetFileVersion>
+
+	  <Message Text="CLR Version is: $(cls_version)"/>
+	</Target>
+
+	<Target Name="package_files_copy">
+	  <ItemGroup>
+	  	<FilesToCopy Include="../Source/SetClrEnabled.sql" />
+	  	<FilesToCopy Include="ReleaseNotes.txt" />
+	  	<FilesToCopy Include="License.txt" />
+	  </ItemGroup>
+
+	  <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="output"/>
+	</Target>
+
+	<Target Name="package_construct_tsqlt">
+	  <Exec Command="CreateAssemblyGenerator.exe tSQLtCLR dbo ../tSQLtCLR/tSQLtCLR/bin/CruiseControl/tSQLtCLR.dll EXTERNAL_ACCESS > output/CreateAssembly.sql"/>
+	   
+	  <Exec Command="BuildHelper ../Source/BuildOrder.txt output/tSQLt.class.sql" />
+	</Target>
+
+	<Target Name="set_build_version">
+	  <FileUpdate Files="output/ReleaseNotes.txt" RegEx="LATEST-BUILD-NUMBER" ReplacementText="$(cls_version)"/>
+	  <FileUpdate Files="output/tSQLt.class.sql" RegEx="\$LATEST-BUILD-NUMBER\$" ReplacementText="$(cls_version)"/>
+	</Target>
+
+	<Target Name="package_example">
+	  	<ItemGroup>
+			<ExampleFiles Include="../Examples/CreateDatabase.sql" />
+			<ExampleFiles Include="output/tSQLt.class.sql" />
+			<ExampleFiles Include="../Examples/Source.sql" />
+			<ExampleFiles Include="../Examples/Tests.sql" />
+		</ItemGroup>
+		<Merge SourceFiles="@(ExampleFiles)" DestinationFile="output/Example.sql" />
+	</Target>
+
+	<Target Name="package_create">
+		<ItemGroup>
+			<ZipFiles Include="output/ReleaseNotes.txt" />
+			<ZipFiles Include="output/License.txt"/>
+			<ZipFiles Include="output/tSQLt.class.sql" />
+			<ZipFiles Include="output/SetClrEnabled.sql"/>
+			<ZipFiles Include="output/Example.sql"/>
+		</ItemGroup>
+		<Zip ZipFileName="output/tSQLt.zip" Files="@(ZipFiles)" Flatten="true"/>
+		<ItemGroup>
+			<DeleteFiles Include="output/*.*" Exclude="output/*.zip" />
+		</ItemGroup>
+		<Delete Files="@(DeleteFiles)" />
+	</Target>
+
+	<Target Name="package_extract">
+		<unzip ZipFileName="output/tSQLt.zip" TargetDirectory="test"/>
+		<Exec Command="BuildHelper.exe ../Tests/BuildOrder.txt test/AllTests.sql" />
+		<Exec Command="BuildHelper.exe ../Tests/BuildOrder.2008.txt test/AllTests.2008.sql" />
+
+		<ItemGroup>
+			<FilesToCopy Include="../Tests/BootStrapTest.sql" />
+			<FilesToCopy Include="CreateBuildDb.sql" />
+			<FilesToCopy Include="GetTestResults.sql" />
+		</ItemGroup>
+
+		<Copy SourceFiles="@(FilesToCopy)" DestinationFolder="test"/>
+	</Target>
+
+	<Target Name="db_recreate">
+		<Exec Command="sqlcmd -S $(db_server) -d master -E -I -i &quot;test/CreateBuildDb.sql&quot; -v DbName=$(db_Name) -V11" />
+		<Exec Command="sqlcmd -S $(db_server) -d $(db_Name) -E -I -i &quot;test/SetClrEnabled.sql&quot; -V11" />
+	</Target>
+
+	<Target Name="db_install_schema">
+		<Exec Command="sqlcmd -S $(db_server) -d $(db_Name) -E -I -i &quot;test/tSQLt.class.sql&quot; -V11" />
+	</Target>
+
+	<Target Name="db_install_tests">
+		<Exec Command="sqlcmd -S $(db_server) -d $(db_Name) -E -I -i &quot;test/AllTests.sql&quot; -V11" />
+ 	</Target>
+
+	<Target Name="db_install_2008_tests">
+	  <Exec Command="sqlcmd -S $(db_server) -d $(db_Name) -E -I -i &quot;test/AllTests.2008.sql&quot; -V11" />
+	</Target>
+
+	<Target Name="db_tests_run">
+	  <Exec Command="sqlcmd -S $(db_server) -d $(db_Name) -E -I -i &quot;test/BootStrapTest.sql&quot; -V11"/>
+	  <Exec Command="sqlcmd -S $(db_server) -d $(db_Name) -E -I -Q &quot;EXEC tSQLt.RunAll;&quot;"/>
+	</Target>
+
+	<Target Name="db_tests_output">
+		<Exec Command="sqlcmd -S $(db_server) -d $(db_Name) -h-1 -y0 -E -I -i &quot;test/GetTestResults.sql&quot; -o &quot;test/results/TestResults.xml&quot; -V11"/>
+	</Target>
+
+	<Target Name="db_tests_check_results">
+		<Exec Command="sqlcmd  -S $(db_server) -d $(db_Name) -h-1 -y0 -E -I -Q &quot;:EXIT(SELECT COUNT(*) FROM tSQLt.TestResult WHERE Result != 'Success')&quot; -V11"/>
+	</Target>
+
+	<Target Name="execute_example_tests" DependsOnTargets="create_example_database,db_example_tests_create,db_example_tests_run,db_example_tests_output,db_example_tests_check_results"/>
+
+	<Target Name="create_example_database">
+		<ItemGroup>
+			<CreateExampleFiles Include="../Examples/ExecuteAsSa.sql" />
+			<CreateExampleFiles Include="test/Example.sql" />
+		</ItemGroup>
+		<Merge SourceFiles="@(CreateExampleFiles)" DestinationFile="test/ExampleToRun.sql" />
+
+	  	<Exec Command="sqlcmd -S $(db_server) -d $(db_Name) -E -I -i &quot;test/ExampleToRun.sql&quot; -V11"/>
+	</Target>
+
+	<Target Name="db_example_tests_create">
+	  <Exec Command="sqlcmd -S $(db_server) -d tSQLt_Example -E -I -i &quot;../Examples/TestThatExamplesAreDeployed.sql&quot; -V11"/>
+	</Target>
+
+	<Target Name="db_example_tests_run">
+	  <Exec Command="sqlcmd -S $(db_server) -d tSQLt_Example -E -I -Q &quot;EXEC tSQLt.Run 'ExampleDeployed';&quot;"/>
+	</Target>
+
+	<Target Name="db_example_tests_output">
+		<Exec Command="sqlcmd -S $(db_server) -d tSQLt_Example -h-1 -y0 -E -I -i &quot;test/GetTestResults.sql&quot; -o &quot;test/results/ExampleTestResults.xml&quot; -V11"/>
+	</Target>
+
+	<Target Name="db_example_tests_check_results">
+		<Exec Command="sqlcmd  -S $(db_server) -d tSQLt_Example -h-1 -y0 -E -I -Q &quot;:EXIT(SELECT COUNT(*) FROM tSQLt.TestResult WHERE Result != 'Success')&quot; -V11"/>
+	</Target>
+
+	<Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
+</Project>
